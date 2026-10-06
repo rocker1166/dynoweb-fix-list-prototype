@@ -1,0 +1,407 @@
+<!doctype html><html lang="en"><head><meta name="robots" content="noindex,nofollow"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><title>DynoWeb Fix List</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" />
+<style>
+/* Layout: a store-admin frame (rail + page). Fix list = status card, then groups by who does the work;
+   a suggestion opens as its own page with the change previewed and how we will verify it. No dollar figures. */
+:root{
+  --bg:#f2f3f5; --card:#ffffff; --card2:#f7f8fa; --line:#e2e5ea; --line2:#eceef1; --hover:#f5f6f8;
+  --text:#15171b; --muted:#646b75; --faint:#97a0ab; --ink:#16181c; --inkText:#ffffff; --accent:#2f4bd8;
+  --leak:#b82a0d; --leakBg:#fdeee9; --ok:#0b6b42; --okBg:#e2f6ec; --info:#0b5a8f; --infoBg:#e8f2fc;
+  --warn:#7a5200; --warnBg:#fff2cf; --idea:#5b3fa0; --ideaBg:#f0ebfa; --shadow:0 1px 2px rgba(20,24,30,.05);
+  --rail:#ffffff; --scrim:rgba(14,16,20,.45); --track:#e6e9ee;
+  --font:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'Geist Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1013; --card:#16191e; --card2:#1b1f25; --line:#262b33; --line2:#1f2329; --hover:#1c2026;
+  --text:#eceef1; --muted:#98a1ac; --faint:#6c7480; --ink:#eceef1; --inkText:#0e1013; --accent:#8da2ff;
+  --leak:#ff9a82; --leakBg:#3a1b15; --ok:#6fdca4; --okBg:#12301f; --info:#8cc7f4; --infoBg:#12283a;
+  --warn:#f1c969; --warnBg:#352a0f; --idea:#bda7f2; --ideaBg:#261d3d; --shadow:none; --rail:#12151a; --scrim:rgba(0,0,0,.6); --track:#2a2f37; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1013; --card:#16191e; --card2:#1b1f25; --line:#262b33; --line2:#1f2329; --hover:#1c2026;
+  --text:#eceef1; --muted:#98a1ac; --faint:#6c7480; --ink:#eceef1; --inkText:#0e1013; --accent:#8da2ff;
+  --leak:#ff9a82; --leakBg:#3a1b15; --ok:#6fdca4; --okBg:#12301f; --info:#8cc7f4; --infoBg:#12283a;
+  --warn:#f1c969; --warnBg:#352a0f; --idea:#bda7f2; --ideaBg:#261d3d; --shadow:none; --rail:#12151a; --scrim:rgba(0,0,0,.6); --track:#2a2f37; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 var(--font);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100%}
+/* rail */
+.rail{background:var(--rail);border-right:1px solid var(--line);padding:14px 10px;position:sticky;top:0;height:100vh;overflow:auto}
+.store{display:flex;align-items:center;gap:10px;padding:6px 8px 14px}
+.store i{width:28px;height:28px;border-radius:8px;background:var(--ink);color:var(--inkText);display:grid;place-items:center;font-style:normal;font-weight:700;font-size:13px}
+.store b{font-size:13px;display:block;line-height:1.2}.store span{font-size:11px;color:var(--muted)}
+.nav-l{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);padding:14px 10px 6px}
+.nv{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:7px 10px;border-radius:8px;color:var(--muted);font-weight:500}
+.nv svg{width:16px;height:16px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.nv:hover{background:var(--hover);color:var(--text)}
+.nv[aria-current=page]{background:var(--hover);color:var(--text);font-weight:600}
+.nv.off{opacity:.55;cursor:default}.nv.off:hover{background:none;color:var(--muted)}
+.nv .ct{margin-left:auto;font-size:11px;font-weight:600;background:var(--ink);color:var(--inkText);border-radius:999px;padding:0 7px;line-height:18px}
+.nv .nw{margin-left:auto;font-size:10px;font-weight:600;color:var(--accent);border:1px solid var(--accent);border-radius:4px;padding:0 5px;line-height:15px}
+/* page */
+.main{min-width:0;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;gap:10px;padding:10px 24px;border-bottom:1px solid var(--line);background:var(--card);position:sticky;top:env(safe-area-inset-top,0px);z-index:6}
+.crumb{color:var(--muted);font-size:13px}.crumb b{color:var(--text);font-weight:600}
+.chip{margin-left:auto;font-size:12px;color:var(--muted);border:1px dashed var(--line);border-radius:999px;padding:2px 10px;white-space:nowrap}
+.mnav{display:none}
+#view{padding:24px;max-width:1120px;width:100%;margin:0 auto}
+.ph{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.ph h1{margin:0;font-size:22px;line-height:1.2;letter-spacing:-.01em}.ph p{margin:3px 0 0;color:var(--muted)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+/* controls */
+.btn{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:7px 14px;font-weight:600;white-space:nowrap;box-shadow:var(--shadow);transition:background .12s}
+.btn:hover{background:var(--hover)}
+.btn.pri{background:var(--ink);color:var(--inkText);border-color:var(--ink)}.btn.pri:hover{opacity:.9;background:var(--ink)}
+.btn.sm{padding:4px 11px;font-size:13px}.btn.gh{background:transparent;border-color:transparent;box-shadow:none;color:var(--muted)}.btn.gh:hover{color:var(--text);background:var(--hover)}
+.btn.dg{color:var(--leak)}
+.btn[disabled]{opacity:.55;cursor:default}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:0 9px;font-size:12px;font-weight:600;line-height:20px;white-space:nowrap}
+.p-leak{background:var(--leakBg);color:var(--leak)}.p-ok{background:var(--okBg);color:var(--ok)}.p-info{background:var(--infoBg);color:var(--info)}.p-warn{background:var(--warnBg);color:var(--warn)}.p-idea{background:var(--ideaBg);color:var(--idea)}.p-gray{background:var(--card2);color:var(--muted);border:1px solid var(--line2)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.muted{color:var(--muted)}.sm{font-size:13px}.xs{font-size:12px}.mono{font-family:var(--mono);font-size:12px}
+h3{margin:0;font-size:14px;font-weight:650}
+.spin{width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;display:inline-block;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:2s}}
+/* status */
+.status{display:flex;align-items:center;gap:18px;padding:16px 18px;margin-bottom:16px;flex-wrap:wrap}
+.status .g{flex:1 1 240px;min-width:0}
+.ring{width:60px;height:60px;flex-shrink:0}
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 14px;font-weight:600;color:var(--muted)}
+.tab[aria-selected=true]{background:var(--ink);color:var(--inkText);border-color:var(--ink)}
+.tab em{font-style:normal;font-size:12px;margin-left:6px;opacity:.75}
+/* groups + rows */
+.grp{margin-bottom:16px;overflow:hidden}
+.gh{display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line2);flex-wrap:wrap}
+.gh .sub{color:var(--muted);font-size:12px}.gh .sp{flex:1}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.start{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--leak);background:var(--leakBg);border-radius:5px;padding:1px 7px}
+.grp.lead{border-color:color-mix(in srgb,var(--leak) 40%,var(--line))}
+.row{display:grid;gap:16px;align-items:center;padding:14px 18px;border-top:1px solid var(--line2);cursor:pointer;transition:background .12s}
+.row:first-of-type{border-top:0}.row:hover{background:var(--hover)}
+.row.feat{grid-template-columns:minmax(0,1fr) auto auto}.row.ln{grid-template-columns:minmax(0,1fr) auto}
+.t{font-weight:600;font-size:14px}.feat .t{font-size:15px}.why{color:var(--muted);font-size:13px}.where{font-size:12px;color:var(--faint)}
+.ln .why{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.w{display:flex;align-items:center;gap:12px}.big{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}.lbl{font-size:11px;color:var(--muted);line-height:1.25}
+.spark{display:flex;align-items:flex-end;gap:2px;height:28px}.spark i{width:5px;background:var(--track);border-radius:2px}.spark i.hi{background:var(--leak)}
+.gauge{position:relative;width:150px;height:8px;border-radius:4px;background:linear-gradient(90deg,#3aa76d 0 40%,#e8b13a 40% 65%,#d4472a 65% 100%)}
+.gauge u{position:absolute;top:-4px;width:3px;height:16px;background:var(--text);border-radius:2px;text-decoration:none}.gauge s{position:absolute;top:-4px;width:2px;height:16px;background:var(--card);box-shadow:0 0 0 1px var(--text);text-decoration:none}
+.dots{display:flex;gap:4px}.dots i{width:10px;height:10px;border-radius:50%;background:var(--track)}.dots i.on{background:var(--ok)}
+.ocl{list-style:none;margin:0;padding:0}
+.ocl li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;padding:10px 18px;border-top:1px solid var(--line2);align-items:start;cursor:pointer}
+.ocl li:hover{background:var(--hover)}
+.ck{width:18px;height:18px;border-radius:5px;background:var(--ok);color:#fff;display:grid;place-items:center;font-size:11px;margin-top:2px}
+.aft{font-size:12px;color:var(--ok);white-space:nowrap}
+.empty{padding:34px 18px;text-align:center;color:var(--muted)}
+/* detail */
+.back{display:inline-flex;gap:6px;align-items:center;color:var(--muted);border:0;background:none;padding:4px 0;font-weight:500;margin-bottom:8px}.back:hover{color:var(--text)}
+.dgrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+.sec{padding:18px;margin-bottom:16px}.sec h3{margin-bottom:10px}
+.ba{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bx{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--card2);min-width:0}
+.bx .tg{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}.bx.b .tg{color:var(--leak)}.bx.a .tg{color:var(--ok)}
+.serp .u{font-size:12px;color:var(--muted)}.serp .tt{color:var(--accent);font-size:16px;line-height:1.3;margin:2px 0}.serp .ds{font-size:13px;color:var(--muted)}
+.code{font-family:var(--mono);font-size:12px;line-height:1.55;white-space:pre-wrap;word-break:break-word;margin:0}
+.code .rm{color:var(--leak)}.code .ad{color:var(--ok)}
+.share{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}.share .im{height:72px;background:linear-gradient(135deg,var(--track),var(--card2));display:grid;place-items:center;color:var(--faint);font-size:12px}.share .tx{padding:8px 10px}
+.phone{width:132px;height:216px;border-radius:20px;border:5px solid var(--text);background:var(--card);position:relative;overflow:hidden;flex-shrink:0;margin:0 auto}
+.phone .im{height:92px;background:linear-gradient(135deg,var(--track),var(--card2))}.phone .ln1{height:7px;background:var(--track);margin:9px 9px 0;border-radius:4px}
+.phone .bt{position:absolute;left:9px;right:9px;bottom:12px;height:28px;border-radius:7px;background:var(--track);display:grid;place-items:center;font-size:10px;color:var(--faint)}
+.phone .bt.hl{outline:2px dashed var(--leak);outline-offset:3px}
+.phone .pop{position:absolute;left:8px;right:8px;bottom:8px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;box-shadow:0 6px 18px rgba(0,0,0,.25);font-size:10px;line-height:1.35}
+.phone .pop b{display:block;margin-bottom:4px}.phone .pop span{display:block;background:var(--ink);color:var(--inkText);border-radius:6px;text-align:center;padding:4px;margin-top:6px;font-weight:600}
+.tl{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.tl li{display:grid;grid-template-columns:22px 1fr;gap:10px}.tl .nd{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:10px;color:#fff;margin-top:1px}
+.tl .nd.done{background:var(--ok);border-color:var(--ok)}.tl .nd.now{border-color:var(--accent)}
+.side .sec{margin-bottom:12px}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0;font-size:13px}.dl dt{color:var(--muted)}.dl dd{margin:0}
+details.tech summary{cursor:pointer;color:var(--muted);font-weight:600}
+.acc{border-top:1px solid var(--line2);padding-top:10px;margin-top:10px}
+.acc button{border:0;background:none;padding:0;font-weight:600;display:flex;gap:6px;align-items:center;color:var(--text)}
+/* modal + toast */
+.scrim{position:fixed;inset:0;background:var(--scrim);display:grid;place-items:center;padding:16px;z-index:20}
+.modal{background:var(--card);border:1px solid var(--line);border-radius:14px;width:min(640px,100%);max-height:calc(100vh - 32px);display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.mh{padding:16px 20px;border-bottom:1px solid var(--line2)}.mh h3{font-size:16px}.mb{padding:6px 20px 14px;overflow:auto}.mf{padding:12px 20px;border-top:1px solid var(--line2);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.chg{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;padding:11px 0;border-top:1px solid var(--line2);align-items:start}.chg:first-child{border-top:0}
+.chg input{width:16px;height:16px;margin-top:3px;accent-color:var(--ink)}
+.rd{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:10px;margin-top:8px;cursor:pointer}.rd input{margin-top:3px;accent-color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--inkText);padding:10px 14px;border-radius:10px;display:flex;gap:14px;align-items:center;z-index:30;max-width:calc(100vw - 32px);box-shadow:0 8px 28px rgba(0,0,0,.3)}
+.toast button{background:none;border:0;color:inherit;font-weight:700;text-decoration:underline;padding:0}
+/* misc pages */
+.hero{padding:22px;display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:22px;align-items:center}
+.hero h2{margin:8px 0 6px;font-size:22px;line-height:1.2;letter-spacing:-.01em}
+.lg{display:grid;gap:0}.lg .it{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 18px;border-top:1px solid var(--line2)}.lg .it:first-child{border-top:0}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.note{padding:12px 14px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);font-size:13px;margin-top:12px}
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr)}.rail{display:none}
+  .mnav{display:flex;gap:6px;overflow-x:auto;padding:8px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+  .mnav .tab{flex-shrink:0}
+  #view{padding:16px}.top{padding:10px 16px}
+  .dgrid,.pair,.ba,.three{grid-template-columns:minmax(0,1fr)}
+  .row.feat{grid-template-columns:minmax(0,1fr) auto}.row.feat .w{grid-column:1/-1;order:3}
+  .hero{grid-template-columns:minmax(0,1fr)}.hero .phone{display:none}
+  .chip{display:none}
+}
+</style>
+
+<div class="app">
+  <aside class="rail" aria-label="Store admin">
+    <div class="store"><i>IG</i><div><b>India GPU Store</b><span>Store admin (mock frame)</span></div></div>
+    <button class="nv off" tabindex="-1"><svg viewBox="0 0 16 16"><path d="M2 7l6-5 6 5v7H2z"/></svg>Home</button>
+    <button class="nv off" tabindex="-1"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="2"/></svg>Orders</button>
+    <button class="nv off" tabindex="-1"><svg viewBox="0 0 16 16"><path d="M2 5l6-3 6 3-6 3zM2 5v6l6 3 6-3V5"/></svg>Products</button>
+    <button class="nv off" tabindex="-1"><svg viewBox="0 0 16 16"><circle cx="8" cy="6" r="3"/><path d="M2 14c1-3 3-4 6-4s5 1 6 4"/></svg>Customers</button>
+    <div class="nav-l">DynoWeb</div>
+    <div id="nav"></div>
+  </aside>
+  <div class="main">
+    <header class="top"><div class="crumb" id="crumb"></div><span class="chip">Prototype · mock data · nothing here changes a real store</span><button class="btn sm gh" data-act="reset">Reset demo</button></header>
+    <nav class="mnav" id="mnav" aria-label="DynoWeb"></nav>
+    <div id="view"></div>
+  </div>
+</div>
+<div id="layer"></div>
+
+<script>
+/* ---------- data: the real india-gpu suggestions, rewritten the way the new page words them ---------- */
+const SP1=[2,3,5,4,9,12,18,22,17,25,21,19,14,9], SP2=[8,6,9,12,30,44,52,60,41,58,49,36,30,22];
+const SITE='india-gpu.myshopify.com';
+const ITEMS=[
+{id:1,k:'leak',who:'you',tag:'Hurts sales',door:'Fix with a popup',t:"Your 'Add to Cart' button is hard to spot on mobile",why:"On mobile the Add to Cart button blends into the page — visitors scroll straight past it.",where:'/products/rtx-4090-gaming-gpu',n:180,sp:SP1,effort:'~2 min to review',
+ found:"On phones, the Add to Cart button on this product page is nearly the same grey as the page around it. Visitors tap near it and nothing happens (180 times in the last 14 days), then scroll away. A short popup on this page can point them to the button.",
+ prev:{type:'phone',pop:true},measure:['Popup goes live on this page only','We count taps on Add to Cart for 14 days and compare with the 14 days before','The result appears on Impact, as a measured change'],
+ tech:{rule:'—  (pattern engine)',sel:'.product-form__buttons .button--add-to-cart',sig:'rage_click, dead_click'}},
+{id:2,k:'leak',who:'you',tag:'Hurts sales',door:'Watch the sessions',t:"Product images jump around as the page loads",why:"The gallery reflows while it loads, so shoppers mis-tap and lose their place.",where:'/products/rtx-4080-super',n:760,sp:SP2,effort:'~5 min to watch',
+ found:"The product gallery has no reserved space, so the page shifts while photos load. 760 visitor actions in the last 14 days were mis-taps or scroll resets on this page. Watching a few sessions shows it clearly.",
+ prev:{type:'code',b:['gallery height: not set (page jumps ~120px)'],a:['gallery height: reserved (page stays put)']},measure:['Watch 2–3 sessions to confirm','Hand the change to your developer, or let Restyle make it','We re-measure shifting from real visitors for 14 days'],
+ tech:{rule:'—  (llm review)',sel:'.product-gallery',sig:'layout_shift'}},
+{id:3,k:'seo',who:'dyno',tag:'Helps Google',door:'Fix it',t:"Stop Google from seeing duplicate copies of your pages",why:"Google may treat copies of the same page as competing pages.",where:'Whole store',chk:[0,5],unit:'pages with a canonical tag',after:'Every page names its own address',effort:'~1 min · undoable',
+ found:"None of the pages we checked tell Google which address is the real one. When the same product is reachable at more than one address, Google can split its attention between them.",
+ prev:{type:'code',file:'layout/theme.liquid',b:['(no canonical tag)'],a:['<link rel="canonical" href="{{ canonical_url }}">']},measure:['We add one line to layout/theme.liquid','We re-read five pages and check the tag is there','Verified is a yes or no, so there is nothing to measure later'],
+ tech:{rule:'quick-win/canonical-url',sel:'link[rel=canonical]',sig:'THEME_AUDIT, STATIC_AUDIT'}},
+{id:4,k:'seo',who:'dyno',tag:'Helps Google',door:'Fix it',t:"Write the line Google shows under your store's link",why:"Google is writing your search snippet for you, usually badly.",where:'Whole store',chk:[0,5],unit:'pages with a description',after:'Your own description shows in search',effort:'~1 min · undoable',
+ found:"Your pages don't output a description tag, so Google writes its own snippet from whatever text it finds first, often menu items and cart links.",
+ prev:{type:'serp',b:{u:SITE+' › products › rtx-4090',tt:'RTX 4090 Gaming GPU',ds:'Skip to content Menu Cart Search Account Log in Home Catalog Contact…'},a:{u:SITE+' › products › rtx-4090',tt:'RTX 4090 Gaming GPU',ds:'Founders Edition RTX 4090, shipped across India. 2-year warranty. In stock.'}},
+ measure:['We add one tag that prints the description you set in Shopify','We re-read five pages and check the tag is there','Verified is a yes or no'],
+ tech:{rule:'quick-win/meta-description',sel:'meta[name=description]',sig:'THEME_AUDIT, STATIC_AUDIT'}},
+{id:5,k:'seo',who:'dyno',tag:'Helps Google',door:'Fix it',t:"Show proper page names in Google results & browser tabs",why:"Every page shows the same headline in Google results.",where:'Whole store',chk:[0,5],unit:'pages with their own title',after:'Each page has its own title',effort:'~1 min · undoable',
+ found:"Every page we checked shares one title, so Google shows the same headline for your homepage and your products.",
+ prev:{type:'serp',b:{u:SITE,tt:'India GPU Store',ds:'Graphics cards, shipped across India.'},a:{u:SITE+' › products › rtx-4090',tt:'RTX 4090 Gaming GPU – India GPU Store',ds:'Graphics cards, shipped across India.'}},
+ measure:['We edit one line in layout/theme.liquid','We re-read five pages and compare their titles','Verified is a yes or no'],
+ tech:{rule:'quick-win/page-title',sel:'head > title',sig:'THEME_AUDIT, STATIC_AUDIT'}},
+{id:6,k:'seo',who:'dyno',tag:'Helps Google',door:'Fix it',t:"Tell Google who your business is (name, logo, links)",why:"Google can then show your logo and name beside your link.",where:'Whole store',chk:[0,1],unit:'organisation markup',after:'Logo and name can appear in search',effort:'~1 min · undoable',
+ found:"Your store has no organisation markup, so Google has nothing to show as your brand name or logo and can't connect your social profiles to your site.",
+ prev:{type:'code',file:'layout/theme.liquid',b:['(no organisation markup)'],a:['{ "@type": "Organization",','  "name": "India GPU Store",','  "logo": "…/logo.png" }']},measure:['We add a small block of markup to the page head','We re-read the page and validate the markup','Verified is a yes or no'],
+ tech:{rule:'quick-win/org-schema',sel:'script[type=application/ld+json]',sig:'THEME_AUDIT, STATIC_AUDIT'}},
+{id:7,k:'seo',who:'dyno',tag:'Helps sharing',door:'Fix it',t:"Fix how your store looks when shared on WhatsApp & social apps",why:"Links shared on WhatsApp and Instagram show no headline.",where:'All product pages',chk:[0,5],unit:'product pages with a share title',after:'Shared links show a headline',effort:'~1 min · undoable',
+ found:"5 of 5 product pages we sampled have no share title. A link pasted into WhatsApp, Instagram or a DM shows as a bare address.",
+ prev:{type:'share',b:{im:'no image',t:'',u:SITE+'/products/rtx-4090'},a:{im:'product photo',t:'RTX 4090 Gaming GPU',u:SITE}},measure:['We turn on the share tags in the DynoWeb theme block','We re-read five product pages and check the tags','Verified is a yes or no'],
+ tech:{rule:'geo/og-metadata-missing',sel:'meta[property="og:title"]',sig:'GEO_AUDIT'}},
+{id:8,k:'speed',who:'dev',tag:'Slows pages',door:'Send to a developer',t:"Make your main image appear faster",why:"Your main image shows late, so shoppers see a blank space first.",where:'Whole store',val:4.1,target:2.5,effort:'~15 min for a developer',
+ found:"On phones your main image takes 4.1 seconds to appear. The theme doesn't tell the browser to fetch it early. Google treats under 2.5 seconds as good.",
+ prev:{type:'code',file:'layout/theme.liquid',b:['(no preload hint for the hero image)'],a:['<link rel="preload" as="image" href="{{ hero_image }}">']},measure:['A developer adds one line (the brief is ready to copy)','We re-measure the same timing from real visitors','The gauge moves toward the green mark, or it does not'],
+ tech:{rule:'quick-win/no-preload-lcp',sel:'link[rel=preload][as=image]',sig:'THEME_AUDIT, STATIC_AUDIT'}},
+{id:9,k:'seo',who:'dev',tag:'Helps Google',door:'Send to a developer',t:"Help Google show your category trail under search results",why:"Your category path can show under your link in Google, which earns more clicks.",where:'All collections pages',chk:[0,3],unit:'collection pages with breadcrumb markup',effort:'~20 min for a developer',
+ found:"Collection pages carry no breadcrumb markup, so Google can't show Home › Collections › GPUs under your link.",
+ prev:{type:'code',file:'collection template',b:['(no breadcrumb markup)'],a:['{ "@type": "BreadcrumbList", "itemListElement": [ … ] }']},measure:['A developer adds the markup (brief is ready)','We re-read three collection pages and validate it','Verified is a yes or no'],
+ tech:{rule:'quick-win/breadcrumb-schema',sel:'script[type=application/ld+json]',sig:'THEME_AUDIT, STATIC_AUDIT'}},
+{id:10,k:'seo',who:'dev',tag:'Easier to navigate',door:'Send to a developer',t:"Add a 'Home › Category' trail so shoppers don't get lost",why:"Shoppers on a product page cannot easily go back a level.",where:'All collections pages',chk:[0,3],unit:'pages with a breadcrumb trail',effort:'~30 min for a developer',
+ found:"There is no visible trail on product or collection pages, so a shopper who lands from search has no quick way back to the category.",
+ prev:{type:'code',file:'product template',b:['(no breadcrumb trail)'],a:['Home › Graphics cards › RTX 4090']},measure:['A developer adds the trail (brief is ready)','We re-read three pages and check it renders','Verified is a yes or no'],
+ tech:{rule:'quick-win/breadcrumb-nav',sel:'nav[aria-label=breadcrumb]',sig:'THEME_AUDIT, STATIC_AUDIT'}},
+{id:11,k:'play',who:'later',tag:'Idea',door:'See the play',t:"Big sale season is near — get your festive push ready",why:"Plan a hero offer and feature it on your homepage before the rush.",where:'Marketing',days:21,effort:'Plan over a week',
+ found:"A seasonal idea, not a defect. Stores like yours plan the hero offer and homepage before the festive rush, not during it.",
+ prev:{type:'plan',items:['Pick one hero offer','Feature it on the homepage','Add a countdown popup the week before','Review what worked after the date']},measure:['No result is claimed for an idea','If you run a popup for it, that popup is measured like any other'],
+ tech:{rule:'companion/event-play',sel:'—',sig:'—'}},
+{id:12,k:'play',who:'later',tag:'Idea',door:'Plan campaign',t:"Janmashtami is in 40 days — get your push ready",why:"The angle: sweets, décor, dress-up and devotional gifting.",where:'Marketing',days:40,effort:'Plan over a week',
+ found:"A seasonal idea with a date on it. The angle that fits is gifting and décor.",
+ prev:{type:'plan',items:['Choose the gift angle','Draft the homepage banner','Schedule the popup','Review after the date']},measure:['No result is claimed for an idea'],
+ tech:{rule:'companion/event-play',sel:'—',sig:'—'}},
+];
+const PRIOR=[
+ {t:'Described 43 product photos for Google Images',when:'Oct 2',v:'Verified on 43 of 43 products'},
+ {t:'Made your store display correctly on phones',when:'Oct 2',v:'Verified on 5 of 5 pages'},
+ {t:'Added a unique headline to each page',when:'Sep 30',v:'Verified on 5 of 5 pages'},
+ {t:'Removed a script that delayed pages showing',when:'Sep 29',v:'Verified'},
+ {t:'Added a size guide link near the buy button',when:'Sep 28',v:'Verified'},
+];
+const byId=id=>ITEMS.find(i=>i.id===id);
+const TAGC={'Hurts sales':'leak','Helps Google':'ok','Helps sharing':'ok','Slows pages':'warn','Easier to navigate':'info','Idea':'idea'};
+const WHO={you:'You decide',dyno:'DynoWeb applies it',dev:'Your developer',later:'Later'};
+
+/* ---------- state ---------- */
+const fresh=()=>({st:Object.fromEntries(ITEMS.map(i=>[i.id,'open'])),log:[],tab:'open',why:false,reason:{}});
+let S=fresh();
+const OPEN=['open'],DONE=['applying','applied','verified','live'],TRASH=['dismissed','snoozed'];
+const ids=l=>ITEMS.filter(i=>l.includes(S.st[i.id]));
+const open=()=>ids(OPEN), done=()=>ids(DONE), trash=()=>ids(TRASH);
+const $=s=>document.querySelector(s), view=$('#view');
+
+/* ---------- small renderers ---------- */
+const pill=(c,t)=>`<span class="pill p-${c}">${t}</span>`;
+const tagPill=i=>pill(TAGC[i.tag]||'gray',i.tag);
+function ring(a,b){const c=2*Math.PI*26,p=a/b;return `<svg class="ring" viewBox="0 0 64 64" role="img" aria-label="${a} of ${b} checks done"><circle cx="32" cy="32" r="26" fill="none" stroke="var(--track)" stroke-width="7"/><circle cx="32" cy="32" r="26" fill="none" stroke="var(--ok)" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c*p} ${c}" transform="rotate(-90 32 32)"/><text x="32" y="37" text-anchor="middle" font-size="14" font-weight="700" fill="var(--text)">${a}/${b}</text></svg>`}
+function widget(i){
+  if(i.k==='leak'){const mx=Math.max(...i.sp);return `<div class="w"><div><div class="big">${i.n.toLocaleString()}</div><div class="lbl">visitor actions<br>last 14 days</div></div><div class="spark" aria-hidden="true">${i.sp.map(v=>`<i class="${v>mx*.7?'hi':''}" style="height:${Math.max(4,Math.round(v/mx*28))}px"></i>`).join('')}</div></div>`}
+  if(i.k==='speed'){return `<div class="w"><div><div class="big">${i.val}s</div><div class="lbl">main image shows<br>on mobile</div></div><div><div class="gauge" aria-hidden="true"><s style="left:${i.target/6*100}%"></s><u style="left:${Math.min(100,i.val/6*100)}%"></u></div><div class="lbl" style="margin-top:7px">target under ${i.target}s</div></div></div>`}
+  if(i.k==='seo'){const [a,b]=i.chk;const ok=S.st[i.id]==='verified';const aa=ok?b:a;return `<div class="w"><div><div class="big">${aa} of ${b}</div><div class="lbl">${i.unit}</div></div><div class="dots" aria-hidden="true">${Array.from({length:Math.min(b,5)},(_,x)=>`<i class="${x<aa?'on':''}"></i>`).join('')}</div></div>`}
+  return `<div class="w"><div><div class="big">${i.days} days</div><div class="lbl">until the date</div></div></div>`;
+}
+function statusPill(i){const s=S.st[i.id];return s==='applying'?`<span class="pill p-gray"><span class="spin"></span>Applying…</span>`:s==='applied'?`<span class="pill p-info"><span class="spin"></span>Verifying…</span>`:s==='verified'?pill('ok','Verified ✓'):s==='live'?pill('info','Live · measuring'):s==='snoozed'?pill('gray','Snoozed'):s==='dismissed'?pill('gray','Dismissed'):''}
+function doorBtn(i,pri){return `<button class="btn ${pri?'pri':''} ${pri?'':'sm'}" data-act="door" data-id="${i.id}">${i.door}</button>`}
+function toast(msg,undo){const old=$('#toast');if(old)old.remove();const d=document.createElement('div');d.id='toast';d.className='toast';d.setAttribute('role','status');d.innerHTML=`<span>${msg}</span>${undo?'<button data-act="toast-undo">Undo</button>':''}`;document.body.appendChild(d);d._undo=undo;clearTimeout(toast.t);toast.t=setTimeout(()=>d.remove(),5200)}
+function modal(html){closeModal();const d=document.createElement('div');d.className='scrim';d.id='scrim';d.innerHTML=`<div class="modal" role="dialog" aria-modal="true">${html}</div>`;$('#layer').appendChild(d);const f=d.querySelector('button,input');if(f)f.focus()}
+function closeModal(){const m=$('#scrim');if(m)m.remove()}
+
+/* ---------- preview renderers for “what changes” ---------- */
+function preview(i){const p=i.prev;
+  const ba=(b,a)=>`<div class="ba"><div class="bx b"><div class="tg">Now</div>${b}</div><div class="bx a"><div class="tg">After</div>${a}</div></div>`;
+  if(p.type==='serp'){const s=x=>`<div class="serp"><div class="u">${x.u}</div><div class="tt">${x.tt}</div><div class="ds">${x.ds}</div></div>`;return ba(s(p.b),s(p.a))}
+  if(p.type==='code'){const c=(l,cl,m)=>`<pre class="code ${cl}">${(p.file?`<span class="muted">${p.file}</span>\n`:'')}${l.map(x=>`<span class="${cl}">${m} ${x.replace(/</g,'&lt;')}</span>`).join('\n')}</pre>`;return ba(c(p.b,'rm','−'),c(p.a,'ad','+'))}
+  if(p.type==='share'){const s=x=>`<div class="share"><div class="im">${x.im}</div><div class="tx"><div class="sm" style="font-weight:600">${x.t||x.u}</div><div class="xs muted">${x.u}</div></div></div>`;return ba(s(p.b),s(p.a))}
+  if(p.type==='phone'){return `<div class="ba"><div class="bx b"><div class="tg">Now</div><div class="phone"><div class="im"></div><div class="ln1"></div><div class="ln1" style="width:60%"></div><div class="bt hl">Add to cart</div></div></div><div class="bx a"><div class="tg">After (preview)</div><div class="phone"><div class="im"></div><div class="ln1"></div><div class="ln1" style="width:60%"></div><div class="bt">Add to cart</div><div class="pop"><b>Still deciding?</b>Your cart is saved. Tap Add to cart when you are ready.<span>Add to cart</span></div></div></div></div>`}
+  return `<ul class="tl">${p.items.map(x=>`<li><span class="nd"></span><span>${x}</span></li>`).join('')}</ul>`;
+}
+
+/* ---------- pages ---------- */
+function rowFeat(i,pri){return `<div class="row feat" role="link" tabindex="0" data-open="${i.id}"><div><div class="t">${i.t}</div><div class="where">${i.where}</div><div class="why">${i.why}</div></div>${widget(i)}<div>${doorBtn(i,pri)}</div></div>`}
+function rowLine(i,right){return `<div class="row ln" role="link" tabindex="0" data-open="${i.id}"><div><div class="t">${i.t}</div><div class="why">${i.where==='Whole store'?'':i.where+' · '}${i.why}</div></div><div class="acts">${right??doorBtn(i)}</div></div>`}
+
+function pageFix(){
+  const o=open(),dn=done(),tr=trash(),fixed=5+dn.length,total=17;
+  let body='';
+  if(S.tab==='open'){
+    const leaks=o.filter(i=>i.who==='you'),dyno=o.filter(i=>i.who==='dyno'),dev=o.filter(i=>i.who==='dev'),later=o.filter(i=>i.who==='later');
+    if(!o.length) body=`<div class="card empty"><h3>Nothing open</h3><p>Run a store check to look again.</p><button class="btn pri" data-act="check">Check my store</button></div>`;
+    if(leaks.length) body+=`<section class="card grp lead"><div class="gh"><span class="dot" style="background:var(--leak)"></span><span class="start">Start here</span><h3>Where shoppers are dropping off</h3>${pill('gray',leaks.length)}<span class="sub">Found in how your visitors behave</span></div>${leaks.map((i,x)=>rowFeat(i,x===0)).join('')}</section>`;
+    if(dyno.length) body+=`<section class="card grp"><div class="gh"><span class="dot" style="background:var(--ok)"></span><h3>Fix in one click</h3>${pill('gray',dyno.length)}<span class="sub">DynoWeb applies these. You see each change first, and every one can be undone.</span><span class="sp"></span><button class="btn pri sm" data-act="apply-all">Preview &amp; apply ${dyno.length}</button></div><ul class="ocl">${dyno.map(i=>`<li role="link" tabindex="0" data-open="${i.id}"><span class="ck">✓</span><div><div class="t">${i.t}</div><div class="why xs">${i.why}</div></div><span class="aft">${i.chk[0]} of ${i.chk[1]} → ${i.chk[1]} of ${i.chk[1]}</span></li>`).join('')}</ul></section>`;
+    let g2='';
+    if(dev.length) g2+=`<section class="card grp"><div class="gh"><span class="dot" style="background:var(--warn)"></span><h3>For your developer</h3>${pill('gray',dev.length)}<span class="sp"></span><button class="btn sm" data-act="copy-briefs">Copy all ${dev.length} briefs</button></div>${dev.map(i=>rowLine(i,'<span class="muted">›</span>')).join('')}</section>`;
+    if(later.length) g2+=`<section class="card grp" style="background:var(--card2)"><div class="gh"><span class="dot" style="background:var(--idea)"></span><h3>Ideas for the season</h3>${pill('gray',later.length)}<span class="sub">Not fixes</span></div>${later.map(i=>rowLine(i,`<span class="xs"><b>${i.days} days</b></span><button class="btn sm" data-act="door" data-id="${i.id}">${i.door}</button>`)).join('')}</section>`;
+    if(g2) body+=`<div class="pair">${g2}</div>`;
+  } else if(S.tab==='done'){
+    body=dn.length?`<section class="card grp">${dn.map(i=>rowLine(i,`${statusPill(i)}<button class="btn sm gh" data-act="undo" data-id="${i.id}">Undo</button>`)).join('')}</section>`:`<div class="card empty">Nothing applied yet. Fixes you apply show up here, then turn to “Verified”.</div>`;
+  } else {
+    body=tr.length?`<section class="card grp">${tr.map(i=>rowLine(i,`${statusPill(i)}<button class="btn sm" data-act="restore" data-id="${i.id}">Restore</button>`)).join('')}</section>`:`<div class="card empty">Dismissed and snoozed suggestions land here, and you can restore them any time.</div>`;
+  }
+  return `<div class="ph"><div><h1>Fix list</h1><p>${o.length} open · each group says who does the work</p></div><div class="acts"><button class="btn" data-act="ask">Ask</button><button class="btn" data-act="check">Check my store</button><button class="btn" data-act="analyze">Analyze my visitors</button></div></div>
+  <div class="card status">${ring(fixed,total)}<div class="g"><h3>${fixed} of ${total} checks done</h3><div class="xs muted">It starts above zero: it counts what DynoWeb already fixed for you.</div></div><button class="btn sm gh" data-act="why-money">Why no dollar figures?</button></div>
+  <div class="tabs" role="tablist"><button class="tab" role="tab" data-tab="open" aria-selected="${S.tab==='open'}">To fix<em>${o.length}</em></button><button class="tab" role="tab" data-tab="done" aria-selected="${S.tab==='done'}">Applied<em>${5+dn.length}</em></button><button class="tab" role="tab" data-tab="trash" aria-selected="${S.tab==='trash'}">Trash<em>${24+tr.length}</em></button></div>${body}`;
+}
+
+function pageDetail(id){
+  const i=byId(id);if(!i)return pageFix();
+  const s=S.st[id],list=ITEMS.map(x=>x.id),ix=list.indexOf(id),prev=list[ix-1],next=list[ix+1];
+  const canApply=i.who==='dyno'&&s==='open';
+  const steps=i.measure.map((m,x)=>{const dn=(s==='verified'||s==='live')?x<2:(s==='applied'?x<1:false);const nw=!dn&&(x===(s==='verified'||s==='live'?2:s==='applied'?1:0));return `<li><span class="nd ${dn?'done':nw?'now':''}">${dn?'✓':''}</span><span>${m}</span></li>`}).join('');
+  let act;
+  if(i.who==='dyno'){act=s==='open'?`<button class="btn pri" style="width:100%" data-act="apply-one" data-id="${i.id}">Preview &amp; fix it</button>`:`<div>${statusPill(i)}</div><button class="btn sm" style="margin-top:10px" data-act="undo" data-id="${i.id}">Undo this fix</button>`}
+  else if(i.who==='you'){act=s==='open'||s==='snoozed'?`<button class="btn pri" style="width:100%" data-act="door" data-id="${i.id}">${i.door}</button>${i.id===1?'<button class="btn" style="width:100%;margin-top:8px" data-act="watch">Watch the sessions</button>':''}`:`<div>${statusPill(i)}</div><button class="btn sm" style="margin-top:10px" data-act="undo" data-id="${i.id}">Turn off</button>`}
+  else if(i.who==='dev'){act=`<button class="btn pri" style="width:100%" data-act="copy-one" data-id="${i.id}">Copy brief for your developer</button>`}
+  else act=`<button class="btn pri" style="width:100%" data-act="door" data-id="${i.id}">${i.door}</button>`;
+  return `<button class="back" data-go="fix">← Fix list</button>
+  <div class="ph"><div><div class="acts" style="margin-bottom:8px">${tagPill(i)}${pill('gray',WHO[i.who])}${statusPill(i)}</div><h1>${i.t}</h1><p>${i.where}</p></div><div class="acts"><button class="btn sm" ${prev?`data-open="${prev}"`:'disabled'} aria-label="Previous suggestion">←</button><span class="xs muted">${ix+1} of ${ITEMS.length}</span><button class="btn sm" ${next?`data-open="${next}"`:'disabled'} aria-label="Next suggestion">→</button></div></div>
+  <div class="dgrid"><div>
+   <section class="card sec"><h3>What we found</h3><p style="margin:0 0 14px">${i.found}</p>${widget(i)}</section>
+   <section class="card sec"><h3>${i.k==='play'?'A plan to start from':'What changes'}</h3>${preview(i)}</section>
+   <section class="card sec"><h3>How we'll know it worked</h3><ol class="tl">${steps}</ol></section>
+   <section class="card sec"><details class="tech"><summary>Technical details</summary><dl class="dl" style="margin-top:12px"><dt>Rule</dt><dd class="mono">${i.tech.rule}</dd><dt>Selector</dt><dd class="mono">${i.tech.sel}</dd><dt>Signals</dt><dd class="mono">${i.tech.sig}</dd></dl></details></section>
+  </div><aside class="side">
+   <section class="card sec"><h3>${i.who==='dyno'?'DynoWeb can do this':i.who==='you'?'Your next step':i.who==='dev'?'Hand this to a developer':'Plan it'}</h3>${act}<dl class="dl" style="margin-top:14px"><dt>Who</dt><dd>${WHO[i.who]}</dd><dt>Time</dt><dd>${i.effort}</dd>${i.who==='dyno'?'<dt>Safety</dt><dd>Shown first, undoable</dd>':''}</dl></section>
+   <section class="card sec"><div class="acc" style="border:0;margin:0;padding:0"><button data-act="why-toggle" aria-expanded="${S.why}">${S.why?'▾':'▸'} Why is this here?</button>${S.why?`<p class="sm muted" style="margin:8px 0 0">${i.why} We found this ${i.k==='leak'?'in how real visitors behaved on your store':i.k==='speed'?'by timing real visitor loads':i.k==='play'?'from the calendar':'by scanning your live pages'}. It is listed here because ${i.who==='dyno'?'DynoWeb can apply it for you':i.who==='you'?'it needs your decision':i.who==='dev'?'it needs a code change':'timing matters'}.</p>`:''}</div>
+   <div class="acts" style="margin-top:12px">${s==='open'?`<button class="btn sm gh" data-act="snooze" data-id="${i.id}">Snooze</button><button class="btn sm gh dg" data-act="dismiss" data-id="${i.id}">Dismiss</button>`:''}</div></section>
+  </aside></div>`;
+}
+
+function pageHome(){
+  const top=open().find(i=>i.who==='you')||open()[0],dn=done(),fixed=5+dn.length;
+  const hero=top?`<section class="card hero"><div><div class="acts">${pill('leak','Do this next')}${tagPill(top)}</div><h2>${top.t}</h2><p class="muted" style="margin:0 0 14px">${top.why}</p>${widget(top)}<div class="acts" style="margin-top:16px"><button class="btn pri" data-act="door" data-id="${top.id}">${top.door}</button><button class="btn" data-open="${top.id}">See the details</button></div></div><div class="phone" aria-hidden="true"><div class="im"></div><div class="ln1"></div><div class="ln1" style="width:60%"></div><div class="bt ${top.id===1?'hl':''}">Add to cart</div></div></section>`:`<section class="card empty"><h3>Nothing open</h3><p>Everything on your list is handled.</p></section>`;
+  return `<div class="ph"><div><h1>Good afternoon</h1><p>Here is what to do on your store today.</p></div></div>
+  <div class="card status">${ring(fixed,17)}<div class="g"><h3>${fixed} of 17 checks done</h3><div class="xs muted">${open().length} still open</div></div><button class="btn sm" data-go="fix">Open Fix list</button></div>
+  ${hero}
+  <section class="card grp" style="margin-top:16px"><div class="gh"><h3>Recently fixed</h3><span class="sp"></span><button class="btn sm gh" data-go="activity">See all</button></div><div class="lg">${[...logItems()].slice(0,3).map(l=>`<div class="it"><span class="ck">✓</span><div><div class="t">${l.t}</div><div class="xs muted">${l.when}</div></div>${pill('ok',l.v)}</div>`).join('')}</div></section>`;
+}
+function logItems(){return [...S.log,...PRIOR]}
+function pageActivity(){return `<div class="ph"><div><h1>Activity</h1><p>Every change DynoWeb made to your store, and whether we checked it worked. Undo any of them.</p></div></div>
+ <section class="card grp"><div class="lg">${logItems().map((l,x)=>`<div class="it"><span class="ck">✓</span><div><div class="t">${l.t}</div><div class="xs muted">${l.when} · ${l.v}</div></div><button class="btn sm gh" data-act="undo-log" data-n="${x}">Undo</button></div>`).join('')}</div></section>`}
+function pageImpact(){const live=ITEMS.filter(i=>S.st[i.id]==='live'),ver=ITEMS.filter(i=>S.st[i.id]==='verified');
+ return `<div class="ph"><div><h1>Impact</h1><p>Results we measured after a fix went live. We never show a forecast.</p></div></div>
+ <div class="three" style="margin-bottom:16px">${[['1','A fix goes live','Nothing is claimed yet.'],['2','We measure','Same metric, 14 days before and 14 days after.'],['3','You see the result','Up, flat or down. Flat and down are shown too.']].map(([n,t,d])=>`<div class="card sec" style="margin:0"><div class="pill p-gray" style="margin-bottom:8px">Step ${n}</div><h3>${t}</h3><p class="sm muted" style="margin:6px 0 0">${d}</p></div>`).join('')}</div>
+ <section class="card grp"><div class="gh"><h3>Measuring now</h3>${pill('gray',live.length)}</div>${live.length?live.map(i=>`<div class="it lg" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:14px 18px;border-top:1px solid var(--line2)"><div><div class="t">${i.t}</div><div class="xs muted">${i.where}</div><div class="bar" style="height:6px;border-radius:3px;background:var(--track);margin-top:8px;max-width:320px"><i style="display:block;height:100%;width:7%;background:var(--accent);border-radius:3px"></i></div></div>${pill('info','Day 1 of 14')}</div>`).join(''):`<div class="empty">Nothing is being measured. Turn on a popup from the Fix list and it appears here.</div>`}</section>
+ <section class="card grp"><div class="gh"><h3>Verified</h3>${pill('gray',ver.length+PRIOR.length)}<span class="sub">A yes or no we re-checked on your live pages</span></div><div class="lg">${[...ver.map(i=>({t:i.t,v:'Verified ✓'})),...PRIOR.map(p=>({t:p.t,v:p.v}))].map(l=>`<div class="it"><span class="ck">✓</span><div class="t">${l.t}</div>${pill('ok',l.v)}</div>`).join('')}</div></section>`}
+function pageOther(name){
+  const R=name==='replays'?`<section class="card grp"><div class="gh"><h3>Sessions on /products/rtx-4090-gaming-gpu</h3>${pill('gray','3 shown')}<span class="sub">Filtered from the Fix list (mock)</span></div>${[['Mobile · 1:42','Rage click on the Add to Cart area'],['Mobile · 0:58','Scrolled past the button twice'],['Desktop · 2:11','Added to cart']].map(([a,b])=>`<div class="row ln" style="cursor:default"><div><div class="t">${a}</div><div class="why">${b}</div></div><button class="btn sm" data-act="toast" data-m="Opens the replay player in the real app">Watch</button></div>`).join('')}</section>`:'';
+  const T={replays:['Replays','Watch real sessions.'],popups:['Popups','Turn a finding into an on-page message.'],agent:['Agent','Ask about your store in plain words.']}[name];
+  return `<div class="ph"><div><h1>${T[0]}</h1><p>${T[1]}</p></div></div>${R}<div class="note">${T[0]} is unchanged in this proposal. The prototype covers Home, Fix list, suggestion pages, Activity and Impact.</div>`}
+
+/* ---------- nav + routing ---------- */
+const NAV=[['home','Home','<path d="M2 7l6-5 6 5v7H2z"/>'],['fix','Fix list','<path d="M3 13l6-6M10 3a3 3 0 0 0 3 3l-1 1-3-3z"/>'],['replays','Replays','<circle cx="8" cy="8" r="6"/><path d="M7 6l3 2-3 2z"/>'],['popups','Popups','<rect x="2" y="3" width="12" height="9" rx="2"/><path d="M5 14h6"/>'],['agent','Agent','<path d="M8 2l1.5 3.5L13 7l-3.5 1.5L8 12 6.5 8.5 3 7l3.5-1.5z"/>'],['activity','Activity','<circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/>','New'],['impact','Impact','<path d="M2 13V7M7 13V3M12 13V9"/>']];
+function route(){const h=(location.hash||'#home').slice(1);const m=/^fix-(\d+)$/.exec(h);return m?{p:'fix',id:+m[1]}:{p:h in {home:1,fix:1,replays:1,popups:1,agent:1,activity:1,impact:1}?h:'home'}}
+function go(p){location.hash=p}
+function render(){
+  const r=route();
+  $('#nav').innerHTML=NAV.map(([k,l,svg,nw])=>`<button class="nv" data-go="${k}" ${r.p===k?'aria-current="page"':''}><svg viewBox="0 0 16 16">${svg}</svg>${l}${k==='fix'?`<span class="ct">${open().length}</span>`:''}${nw?`<span class="nw">${nw}</span>`:''}</button>`).join('');
+  $('#mnav').innerHTML=NAV.map(([k,l])=>`<button class="tab" data-go="${k}" aria-selected="${r.p===k}">${l}</button>`).join('');
+  const name=NAV.find(n=>n[0]===r.p)[1];
+  $('#crumb').innerHTML=r.id?`DynoWeb / <span>Fix list</span> / <b>Suggestion</b>`:`DynoWeb / <b>${name}</b>`;
+  view.innerHTML=r.id?pageDetail(r.id):r.p==='fix'?pageFix():r.p==='home'?pageHome():r.p==='activity'?pageActivity():r.p==='impact'?pageImpact():pageOther(r.p);
+}
+window.addEventListener('hashchange',()=>{render();window.scrollTo(0,0)});
+
+/* ---------- actions ---------- */
+function applyModal(list){
+  modal(`<div class="mh"><h3>Review ${list.length} change${list.length>1?'s':''} before they go live</h3><div class="xs muted" style="margin-top:2px">Nothing changes until you press Apply. Each one can be undone.</div></div><div class="mb">${list.map(i=>`<label class="chg"><input type="checkbox" checked data-chg="${i.id}"><div><div class="t">${i.t}</div><div class="xs muted">${i.prev.file?i.prev.file+' · ':''}${i.after||'Change applies to your live theme'}</div></div><span class="xs aft">${i.effort.replace(' · undoable','')}</span></label>`).join('')}</div><div class="mf"><button class="btn" data-act="close">Cancel</button><button class="btn pri" data-act="do-apply">Apply selected</button></div>`);
+}
+function applyIds(list){
+  list.forEach((id,x)=>{S.st[id]='applying';setTimeout(()=>{S.st[id]='applied';render();setTimeout(()=>{S.st[id]=byId(id).who==='you'?'live':'verified';S.log.unshift({t:byId(id).t,when:'Just now',v:byId(id).who==='you'?'Live · measuring':'Verified on the live page',id});render()},1500)},700*(x+1))});
+  render();
+  toast(`Applying ${list.length}…`,()=>{list.forEach(id=>{S.st[id]='open'});S.log=S.log.filter(l=>!list.includes(l.id));render();toast('Undone. Nothing was changed.')});
+}
+function briefOf(i){return `${i.t}\nWhere: ${i.where}\nWhat to do: ${i.prev.a?(Array.isArray(i.prev.a)?i.prev.a.join('\n'):''):''}\nWhy: ${i.why}\nWhen it's done we re-read the page to check.`}
+function copy(text,msg){const ok=()=>toast(msg);try{navigator.clipboard.writeText(text).then(ok,()=>toast('Copy blocked here. Select the text on the suggestion page instead.'))}catch(e){toast('Copy blocked here.')}}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-open][role=link]')){e.preventDefault();go('fix-'+e.target.dataset.open)}});
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-act],[data-go],[data-open],[data-tab]');if(!t)return;
+  if(t.matches('[data-open]')&&!t.dataset.act){go('fix-'+t.dataset.open);return}
+  if(t.dataset.go){go(t.dataset.go);return}
+  if(t.dataset.tab){S.tab=t.dataset.tab;render();return}
+  const a=t.dataset.act,id=+t.dataset.id,i=byId(id);
+  if(a==='reset'){S=fresh();closeModal();go('home');render();toast('Demo reset.');return}
+  if(a==='close'){closeModal();return}
+  if(a==='toast'){toast(t.dataset.m);return}
+  if(a==='toast-undo'){const d=$('#toast');const u=d&&d._undo;if(d)d.remove();if(u)u();return}
+  if(a==='check'){const b=t;b.disabled=true;b.innerHTML='<span class="spin"></span> Checking…';setTimeout(()=>{render();toast('Store checked. No new suggestions this time.')},1400);return}
+  if(a==='analyze'){toast('Analysis runs in the background and takes a few minutes.');return}
+  if(a==='ask'){toast('Opens the Agent with this page as context.');return}
+  if(a==='why-toggle'){S.why=!S.why;render();return}
+  if(a==='why-money'){modal(`<div class="mh"><h3>Why there are no dollar figures here</h3></div><div class="mb"><p>An estimate of “sales at stake” was a model with assumptions, not something we measured. If we can't stand behind a number, we don't show it.</p><ul><li><b>Visitor leaks</b> show how many visitor actions we saw, and we measure the same thing after the fix.</li><li><b>Search and sharing fixes</b> show a check that turns green after we re-read your page.</li><li><b>Speed</b> shows a real timing against Google's target.</li></ul><p class="muted">Money only appears on Impact, after a fix is live and measured.</p></div><div class="mf"><button class="btn pri" data-act="close">Got it</button></div>`);return}
+  if(a==='apply-all'){applyModal(open().filter(x=>x.who==='dyno'));return}
+  if(a==='apply-one'){applyModal([i]);return}
+  if(a==='do-apply'){const sel=[...document.querySelectorAll('[data-chg]:checked')].map(c=>+c.dataset.chg);closeModal();if(!sel.length){toast('Nothing selected.');return}S.tab='open';applyIds(sel);return}
+  if(a==='door'){
+    if(i.who==='dyno'){applyModal([i]);return}
+    if(i.who==='dev'){copy(briefOf(i),'Brief copied. Paste it to your developer.');return}
+    if(i.id===1){modal(`<div class="mh"><h3>Turn on a popup for this page</h3><div class="xs muted" style="margin-top:2px">Only on /products/rtx-4090-gaming-gpu · mobile · you can turn it off any time</div></div><div class="mb"><div class="ba" style="margin-top:10px"><div class="bx a"><div class="tg">Preview</div><div class="phone"><div class="im"></div><div class="ln1"></div><div class="ln1" style="width:60%"></div><div class="bt">Add to cart</div><div class="pop"><b>Still deciding?</b>Your cart is saved. Tap Add to cart when you are ready.<span>Add to cart</span></div></div></div><div class="bx"><div class="tg" style="color:var(--muted)">What happens next</div><ol class="tl" style="margin-top:6px">${byId(1).measure.map(m=>`<li><span class="nd"></span><span class="sm">${m}</span></li>`).join('')}</ol></div></div></div><div class="mf"><button class="btn" data-act="close">Not now</button><button class="btn pri" data-act="popup-on">Turn it on</button></div>`);return}
+    if(i.id===2){go('replays');toast('Showing sessions for this page');return}
+    toast(i.who==='later'?'Opens the plan for this idea.':'Opens this suggestion.');return}
+  if(a==='popup-on'){closeModal();applyIds([1]);toast('Popup is live on this page.',()=>{S.st[1]='open';S.log=S.log.filter(l=>l.id!==1);render();toast('Popup turned off.')});return}
+  if(a==='watch'){go('replays');return}
+  if(a==='copy-briefs'){copy(open().filter(x=>x.who==='dev').map((x,n)=>`${n+1}. ${briefOf(x)}`).join('\n\n---\n\n'),'3 briefs copied. Paste them to your developer.');return}
+  if(a==='copy-one'){copy(briefOf(i),'Brief copied. Paste it to your developer.');return}
+  if(a==='undo'){S.st[id]='open';S.log=S.log.filter(l=>l.id!==id);render();toast('Undone. The change was reverted.');return}
+  if(a==='undo-log'){const n=+t.dataset.n,l=logItems()[n];if(l&&l.id){S.st[l.id]='open';S.log=S.log.filter(x=>x!==l)}else{toast('Undone (demo). In the real app this reverts the change.');return}render();toast('Undone. The change was reverted.');return}
+  if(a==='restore'){S.st[id]='open';render();toast('Back on your list.');return}
+  if(a==='snooze'){S.st[id]='snoozed';go('fix');toast('Snoozed. We will bring it back when something changes.',()=>{S.st[id]='open';render()});return}
+  if(a==='dismiss'){modal(`<div class="mh"><h3>Dismiss this suggestion?</h3><div class="xs muted" style="margin-top:2px">It moves to Trash and you can restore it. Your answer helps us show better suggestions.</div></div><div class="mb">${[['Not relevant to my store','nr'],['Already done','ad'],["I can't do this",'cd']].map(([l,v],x)=>`<label class="rd"><input type="radio" name="rs" value="${v}" ${x===0?'checked':''}><span>${l}</span></label>`).join('')}</div><div class="mf"><button class="btn" data-act="close">Cancel</button><button class="btn pri dg" style="color:var(--inkText)" data-act="do-dismiss" data-id="${id}">Dismiss</button></div>`);return}
+  if(a==='do-dismiss'){closeModal();S.st[id]='dismissed';go('fix');toast('Moved to Trash.',()=>{S.st[id]='open';render()});return}
+});
+render();
+</script>
+</body></html>

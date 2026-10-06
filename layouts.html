@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head><meta name="robots" content="noindex,nofollow">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Fix list layout options</title>
+<link rel="stylesheet" href="https://cdn.shopify.com/static/fonts/inter/v4/styles.css" />
+<style>
+:root{
+  --bg:#f1f2f4; --card:#fff; --line:#e3e5e8; --line2:#eef0f2; --text:#1a1c1f; --muted:#6b7177; --faint:#9aa0a6;
+  --ink:#1a1a1a; --inkText:#fff;
+  --leak:#c4290a; --leakBg:#fff1ee; --ok:#0c5132; --okBg:#e3f9ec; --info:#00527c; --infoBg:#eaf4ff; --warn:#6b4a00; --warnBg:#fff3d1; --idea:#5c3d99; --ideaBg:#f1ecfb;
+  --r:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Inter,system-ui,sans-serif}
+button{font:inherit;cursor:pointer}
+.top{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px;padding:10px 20px;flex-wrap:wrap}
+.top b{margin-right:10px}
+.tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font-weight:600;color:var(--muted)}
+.tab[aria-selected=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tag-mock{margin-left:auto;font-size:12px;color:var(--muted)}
+main{max-width:1180px;margin:0 auto;padding:20px}
+.cap{display:flex;gap:18px;flex-wrap:wrap;align-items:baseline;margin:2px 0 16px}
+.cap h2{margin:0;font-size:18px}
+.cap p{margin:0;color:var(--muted);max-width:760px}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:600;line-height:20px}
+.p-leak{background:var(--leakBg);color:var(--leak)}.p-ok{background:var(--okBg);color:var(--ok)}.p-info{background:var(--infoBg);color:var(--info)}.p-warn{background:var(--warnBg);color:var(--warn)}.p-idea{background:var(--ideaBg);color:var(--idea)}.p-gray{background:#f1f2f4;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 14px;font-weight:600;white-space:nowrap}
+.btn.pri{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.sm{padding:4px 10px;font-size:13px}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.muted{color:var(--muted)} .small{font-size:12px}
+h3{margin:0;font-size:14px}
+/* header + status */
+.page-h{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+.page-h h1{margin:0;font-size:20px}
+.page-h p{margin:2px 0 0;color:var(--muted)}
+.status{display:flex;align-items:center;gap:18px;padding:14px 18px;margin-bottom:16px;flex-wrap:wrap}
+.status .grow{flex:1 1 260px}
+.bar{height:6px;border-radius:3px;background:#eceef0;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--ok);border-radius:3px}
+/* widgets: the impact language of each suggestion type */
+.w{display:flex;align-items:center;gap:12px}
+.big{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.lbl{font-size:11px;color:var(--muted);line-height:1.25}
+.spark{display:flex;align-items:flex-end;gap:2px;height:28px}
+.spark i{width:5px;background:#c9ced3;border-radius:2px}
+.spark i.hi{background:var(--leak)}
+.gauge{position:relative;width:150px;height:8px;border-radius:4px;background:linear-gradient(90deg,#3aa76d 0 40%,#e8b13a 40% 65%,#d4472a 65% 100%)}
+.gauge u{position:absolute;top:-4px;width:3px;height:16px;background:var(--ink);border-radius:2px;text-decoration:none}
+.gauge s{position:absolute;top:-4px;width:2px;height:16px;background:#fff;box-shadow:0 0 0 1px var(--ink);text-decoration:none}
+.dots{display:flex;gap:4px}
+.dots i{width:10px;height:10px;border-radius:50%;background:#e0e3e6}
+.dots i.on{background:var(--ok)}
+.days{font-weight:700}
+.row{display:grid;gap:16px;align-items:center;padding:14px 18px;border-top:1px solid var(--line2)}
+.row:first-child{border-top:0}
+.row .t{font-weight:600;font-size:14px}
+.row .why{color:var(--muted);font-size:13px}
+.row .where{font-size:12px;color:var(--faint)}
+.chev{color:var(--faint);padding:0 6px}
+.sec{margin-bottom:16px}
+.sec-h{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line2)}
+.sec-h .sub{color:var(--muted);font-size:12px}
+.sec-h .sp{flex:1}
+.dot{width:8px;height:8px;border-radius:50%}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+/* A */
+.feat{grid-template-columns:1fr auto auto}
+.oneclick li{list-style:none;display:grid;grid-template-columns:22px 1fr auto;gap:10px;padding:9px 18px;border-top:1px solid var(--line2);align-items:start}
+.oneclick ul{margin:0;padding:0}
+.chk{width:18px;height:18px;border-radius:5px;background:var(--ok);color:#fff;display:grid;place-items:center;font-size:12px;margin-top:2px}
+.after{font-size:12px;color:var(--ok);white-space:nowrap}
+/* B */
+.ring{width:64px;height:64px}
+.cl-g{padding:10px 18px 4px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.cl{display:grid;grid-template-columns:26px 1fr auto 24px;gap:12px;align-items:center;padding:12px 18px;border-top:1px solid var(--line2)}
+.circ{width:20px;height:20px;border-radius:50%;border:2px solid #cfd3d7}
+.circ.done{background:var(--ok);border-color:var(--ok);color:#fff;display:grid;place-items:center;font-size:11px}
+.open-body{padding:6px 18px 18px 56px;display:grid;grid-template-columns:1fr 280px;gap:20px;background:#fafbfc;border-top:1px solid var(--line2)}
+.acts{display:flex;gap:8px;grid-column:1/-1;flex-wrap:wrap}
+@media(max-width:900px){.open-body{grid-template-columns:1fr;padding-left:18px}}
+/* C */
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-items:start}
+@media(max-width:1000px){.board{grid-template-columns:repeat(2,1fr)}}
+.col{background:#e9ebee;border-radius:var(--r);padding:10px}
+.col-h{display:flex;align-items:center;gap:8px;padding:4px 6px 10px}
+.col-h .sp{flex:1}
+.kcard{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:8px}
+.kcard .t{font-weight:600;font-size:13px;margin-bottom:4px}
+.kcard .why{font-size:12px;color:var(--muted);margin-bottom:8px}
+.kcard .w{margin-bottom:10px}
+.kcard .btn{width:100%}
+/* D */
+.focus{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:start}
+@media(max-width:1000px){.focus{grid-template-columns:1fr}}
+.hero{padding:22px}
+.hero h2{margin:8px 0 6px;font-size:22px;line-height:1.2}
+.phone{width:150px;height:250px;border-radius:22px;border:6px solid #1a1c1f;background:#fff;position:relative;overflow:hidden;flex-shrink:0}
+.phone .ph-img{height:110px;background:linear-gradient(135deg,#d9dde3,#eef0f3)}
+.phone .ph-line{height:8px;background:#eceef0;margin:10px 10px 0;border-radius:4px}
+.phone .ph-btn{position:absolute;left:10px;right:10px;bottom:14px;height:30px;border-radius:7px;background:#ececec;display:grid;place-items:center;font-size:10px;color:#b5b9bd;outline:2px dashed var(--leak);outline-offset:3px}
+.q{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:12px 16px;border-top:1px solid var(--line2)}
+.q:first-child{border-top:0}
+/* types page */
+.types{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:1000px){.types{grid-template-columns:1fr 1fr}}
+.type{padding:16px}
+.type h3{margin-bottom:2px}
+.type .src{font-size:12px;color:var(--muted);margin-bottom:12px}
+.type .demo{padding:12px;border-radius:10px;background:#f6f7f8;margin-bottom:10px;min-height:62px;display:flex;align-items:center}
+.type .after-fix{font-size:12px;color:var(--muted)}
+.type .after-fix b{color:var(--text)}
+.decide{padding:18px;margin-top:20px}
+.decide ol{margin:8px 0 0;padding-left:20px}
+main > section{scroll-margin-top:80px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="top">
+  <b>Fix list · layout options</b>
+  <button class="tab" data-t="types" aria-selected="true">Impact by type</button>
+  <button class="tab" data-t="A" aria-selected="false">A · Triage sections</button>
+  <button class="tab" data-t="B" aria-selected="false">B · Checklist</button>
+  <button class="tab" data-t="C" aria-selected="false">C · Board</button>
+  <button class="tab" data-t="D" aria-selected="false">D · Next + queue</button>
+  <span class="tag-mock">Titles are your real india-gpu rows · numbers marked “mock” are placeholders · no dollars anywhere</span>
+</div>
+<main>
+  <section id="types"></section>
+  <section id="A" hidden></section>
+  <section id="B" hidden></section>
+  <section id="C" hidden></section>
+  <section id="D" hidden></section>
+</main>
+
+<script>
+// ---- data: real titles/reasons from the india-gpu rows; counts marked mock where not in the data ----
+const SP=[2,3,5,4,9,12,18,22,17,25,21,19,14,9];            // mock: daily actions, last 14 days
+const SP2=[8,6,9,12,30,44,52,60,41,58,49,36,30,22];        // mock
+const I=[
+ {k:'leak',who:'you',t:"Your 'Add to Cart' button is hard to spot on mobile",why:"On mobile the Add to Cart button blends into the page — visitors scroll straight past it.",where:"/products/rtx-4090-gaming-gpu",n:180,sp:SP,door:"Fix with a popup",alt:"Watch sessions",tag:"Hurts sales"},
+ {k:'leak',who:'you',t:"Product images jump around as the page loads",why:"The gallery reflows while it loads, so shoppers mis-tap and lose their place.",where:"/products/rtx-4080-super",n:760,sp:SP2,door:"Watch the sessions",tag:"Hurts sales"},
+ {k:'seo',who:'dyno',t:"Stop Google from seeing duplicate copies of your pages",why:"Google may treat copies of the same page as competing pages.",where:"Whole store",chk:[0,5],unit:"pages with a canonical tag",after:"Every page names its own address",door:"Fix it",tag:"Helps Google"},
+ {k:'seo',who:'dyno',t:"Write the line Google shows under your store's link",why:"Google is writing your search snippet for you, usually badly.",where:"Whole store",chk:[0,5],unit:"pages with a description",after:"Your own description shows in search",door:"Fix it",tag:"Helps Google"},
+ {k:'seo',who:'dyno',t:"Show proper page names in Google results & browser tabs",why:"Every page shows the same headline in Google results.",where:"Whole store",chk:[0,5],unit:"pages with their own title",after:"Each page has its own title",door:"Fix it",tag:"Helps Google"},
+ {k:'seo',who:'dyno',t:"Tell Google who your business is (name, logo, links)",why:"Google can then show your logo and name beside your link.",where:"Whole store",chk:[0,1],unit:"organisation markup",after:"Logo and name can appear in search",door:"Fix it",tag:"Helps Google"},
+ {k:'seo',who:'dyno',t:"Fix how your store looks when shared on WhatsApp & social apps",why:"Links shared on WhatsApp and Instagram show no headline.",where:"All product pages",chk:[0,5],unit:"product pages with a share title",after:"Shared links show a headline",door:"Fix it",tag:"Helps sharing"},
+ {k:'speed',who:'dev',t:"Make your main image appear faster",why:"Your main image shows late, so shoppers see a blank space first.",where:"Whole store",val:4.1,target:2.5,door:"Send to a developer",tag:"Slows pages"},
+ {k:'seo',who:'dev',t:"Help Google show your category trail under search results",why:"Your category path can show under your link in Google, which earns more clicks.",where:"All collections pages",chk:[0,3],unit:"collection pages with breadcrumb markup",door:"Send to a developer",tag:"Helps Google"},
+ {k:'seo',who:'dev',t:"Add a 'Home › Category' trail so shoppers don't get lost",why:"Shoppers on a product page cannot easily go back a level.",where:"All collections pages",chk:[0,3],unit:"pages with a breadcrumb trail",door:"Send to a developer",tag:"Easier to navigate"},
+ {k:'play',who:'later',t:"Big sale season is near — get your festive push ready",why:"Plan a hero offer and feature it on your homepage before the rush.",where:"Marketing",days:21,door:"See the play",tag:"Idea"},
+ {k:'play',who:'later',t:"Janmashtami is in 40 days — get your push ready",why:"The angle: sweets, décor, dress-up and devotional gifting.",where:"Marketing",days:40,door:"Plan campaign",tag:"Idea"},
+];
+const by=w=>I.filter(i=>i.who===w);
+const esc=s=>s;
+const pill=(c,t)=>`<span class="pill p-${c}">${t}</span>`;
+const TAGC={'Hurts sales':'leak','Helps Google':'ok','Helps sharing':'ok','Slows pages':'warn','Easier to navigate':'info','Idea':'idea'};
+const tagPill=i=>pill(TAGC[i.tag]||'gray',i.tag);
+
+// the impact language per type: a measured fact, never a forecast
+function widget(i,compact){
+  if(i.k==='leak'){
+    const mx=Math.max(...i.sp);
+    return `<div class="w"><div><div class="big">${i.n.toLocaleString()}</div><div class="lbl">${i.unit||"visitor actions"}<br>last 14 days</div></div>
+      <div class="spark" title="mock daily trend">${i.sp.map(v=>`<i class="${v>mx*.7?'hi':''}" style="height:${Math.max(4,Math.round(v/mx*28))}px"></i>`).join('')}</div></div>`;
+  }
+  if(i.k==='speed'){
+    const pos=Math.min(100,i.val/6*100), tpos=i.target/6*100;
+    return `<div class="w"><div><div class="big">${i.val}s</div><div class="lbl">main image shows<br>on mobile</div></div>
+      <div><div class="gauge"><s style="left:${tpos}%"></s><u style="left:${pos}%"></u></div><div class="lbl" style="margin-top:6px">target under ${i.target}s</div></div></div>`;
+  }
+  if(i.k==='seo'){
+    const [a,b]=i.chk;
+    return `<div class="w"><div><div class="big">${a} of ${b}</div><div class="lbl">${i.unit}</div></div>
+      <div class="dots">${Array.from({length:Math.min(b,5)},(_,x)=>`<i class="${x<a?'on':''}"></i>`).join('')}</div></div>`;
+  }
+  if(i.k==='play'){
+    return `<div class="w"><div><div class="big days">${i.days} days</div><div class="lbl">until the date<br>(mock)</div></div></div>`;
+  }
+  return '';
+}
+const btn=(i,pri)=>`<button class="btn ${pri?'pri':''}">${i.door}</button>`;
+
+/* ---------- Impact by type ---------- */
+document.getElementById('types').innerHTML=`
+<div class="cap"><h2>What “impact” means for each kind of suggestion</h2>
+<p>No dollars. Each type shows the one fact we can actually measure, and promises one thing we can verify afterwards. Every layout below uses these same widgets, so you are picking a layout, not re-arguing the numbers.</p></div>
+<div class="types">
+ ${[
+  ['Visitor leak','From how real visitors behave (rage clicks, drop-offs, layout shift)',I[0],'<b>Measured after the fix:</b> actions on this element, before vs after, once the fix is live.'],
+  ['Page speed','From real visitor timings on your pages',I[7],'<b>Measured after the fix:</b> the same timing, re-read from visitors. Moves toward the green mark.'],
+  ['Search & sharing basics','From a scan of your live pages',I[2],'<b>Verified after the fix:</b> we re-read the page and the check turns green. A yes/no, not a guess.'],
+  ['Breadcrumbs & markup','From a scan of your collection and product pages',I[8],'<b>Verified after the fix:</b> developer ships it, we re-scan, the dots fill.'],
+  ['Storefront error','From errors the tracker saw on cart and checkout',{k:'leak',unit:'error hits',n:86,sp:[0,0,1,0,2,4,9,14,11,16,9,8,6,6]},'<b>Measured after the fix:</b> hits per day should drop to zero. Shown as a trend.'],
+  ['Seasonal idea','A calendar date, not a defect',I[10],'<b>No impact claimed.</b> A countdown and a plan. It lives apart from the fixes.'],
+ ].map(([h,s,i,a])=>`<div class="card type"><h3>${h}</h3><div class="src">${s}</div><div class="demo">${widget(i)}</div><div class="after-fix">${a}</div></div>`).join('')}
+</div>
+<div class="card decide"><h3>How to read this</h3><ol>
+<li>Open <b>A, B, C, D</b> above. Same 12 real suggestions in every one.</li>
+<li>Pick one (or a mix: “C’s columns, D’s hero”). Tell me what to cut or change.</li>
+<li>Then I build it in the real page with your real data, and the page never shows a dollar.</li></ol></div>`;
+
+const head=(sub)=>`<div class="page-h"><div><h1>Fix list</h1><p>${sub}</p></div><div style="display:flex;gap:8px"><button class="btn sm">Check my store</button><button class="btn sm">Analyze my visitors</button></div></div>`;
+const status=(extra='')=>`<div class="card status"><div class="grow"><h3>5 fixed · 12 to go</h3><div class="bar"><i style="width:${Math.round(5/17*100)}%"></i></div></div><span class="muted small">Results are measured after a fix goes live and show up on Impact.</span>${extra}</div>`;
+
+/* ---------- A: triage sections ---------- */
+document.getElementById('A').innerHTML=`
+<div class="cap"><h2>A · Triage sections</h2><p><b>Best when</b> most suggestions are look-alikes. Groups by who acts; the five identical fixes become one decision. <b>Cost:</b> small — mostly what exists today, with a preview-and-apply step.</p></div>
+${head('12 open — each group says who does the work')}
+${status()}
+<div class="card sec"><div class="sec-h"><span class="dot" style="background:var(--leak)"></span><h3>Costing you sales</h3>${pill('gray','2')}<span class="sub">Found in how your visitors behave</span></div>
+${by('you').map((i,x)=>`<div class="row feat"><div><div class="t">${i.t}</div><div class="where">${i.where}</div><div class="why">${i.why}</div></div>${widget(i)}${btn(i,x===0)}</div>`).join('')}</div>
+<div class="card sec"><div class="sec-h"><span class="dot" style="background:var(--ok)"></span><h3>Fix in one click</h3>${pill('gray','5')}<span class="sub">DynoWeb applies these. You see each change first; every one can be undone.</span><span class="sp"></span><button class="btn pri">Preview &amp; apply 5</button></div>
+<ul class="oneclick" style="margin:0;padding:0">${by('dyno').map(i=>`<li><span class="chk">✓</span><div><div class="t" style="font-weight:600">${i.t}</div><div class="why muted small">${i.why}</div></div><span class="after">${i.chk[0]} of ${i.chk[1]} → ${i.chk[1]} of ${i.chk[1]}</span></li>`).join('')}</ul></div>
+<div class="grid2">
+<div class="card"><div class="sec-h"><span class="dot" style="background:var(--warn)"></span><h3>For your developer</h3>${pill('gray','3')}<span class="sp"></span><button class="btn sm">Copy all 3 briefs</button></div>
+${by('dev').map(i=>`<div class="row" style="grid-template-columns:1fr auto"><div><div class="t">${i.t}</div><div class="why">${i.why}</div></div><span class="chev">›</span></div>`).join('')}</div>
+<div class="card" style="background:#fafbfc"><div class="sec-h"><span class="dot" style="background:var(--idea)"></span><h3>Ideas for the season</h3>${pill('gray','2')}<span class="sub">Not fixes</span></div>
+${by('later').map(i=>`<div class="row" style="grid-template-columns:1fr auto auto"><div><div class="t">${i.t}</div></div><span class="small days">${i.days} days</span><button class="btn sm">${i.door}</button></div>`).join('')}</div>
+</div>`;
+
+/* ---------- B: checklist ---------- */
+const ring=(a,b)=>{const c=2*Math.PI*26,p=a/b;return `<svg class="ring" viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" fill="none" stroke="#e8eaed" stroke-width="7"/><circle cx="32" cy="32" r="26" fill="none" stroke="var(--ok)" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c*p} ${c}" transform="rotate(-90 32 32)"/><text x="32" y="37" text-anchor="middle" font-size="14" font-weight="700" fill="#1a1c1f">${a}/${b}</text></svg>`};
+const clRow=(i,open)=>`<div class="cl"><span class="circ"></span><div><div class="t" style="font-weight:600">${i.t}</div>${open?'':`<div class="why muted small">${i.why}</div>`}</div>${tagPill(i)}<span class="chev">${open?'⌃':'⌄'}</span></div>`;
+document.getElementById('B').innerHTML=`
+<div class="cap"><h2>B · Checklist</h2><p><b>Best when</b> you want progress to be the point: fixing things feels like finishing a setup guide. Nothing needs a number. <b>Cost:</b> small–medium; native Shopify pattern.</p></div>
+${head('Work through the list, top to bottom')}
+<div class="card status"><div style="display:flex;gap:16px;align-items:center">${ring(5,17)}<div><h3>5 of 17 checks done</h3><div class="muted small">Starts above zero: it counts what DynoWeb already fixed.</div></div></div></div>
+<div class="card sec">
+<div class="cl-g">Costing you sales</div>
+${(()=>{const i=by('you')[0];return `${clRow(i,true)}<div class="open-body"><div><div class="why" style="font-size:14px;color:var(--text)">${i.why}</div><div class="where" style="margin:6px 0 12px">${i.where}</div>${widget(i)}</div><div style="display:flex;align-items:center;justify-content:center"><div class="phone"><div class="ph-img"></div><div class="ph-line"></div><div class="ph-line" style="width:60%"></div><div class="ph-btn">Add to cart</div></div></div><div class="acts"><button class="btn pri">${i.door}</button><button class="btn">${i.alt}</button><button class="btn ghost">Not relevant</button><button class="btn ghost">Snooze</button></div></div>`})()}
+${clRow(by('you')[1])}
+<div class="cl-g">DynoWeb can fix in one click</div>
+${by('dyno').map(i=>clRow(i)).join('')}
+<div class="cl-g">Needs a developer</div>
+${by('dev').map(i=>clRow(i)).join('')}
+<div class="cl-g">Ideas for the season</div>
+${by('later').map(i=>clRow(i)).join('')}
+</div>`;
+
+/* ---------- C: board ---------- */
+const kcard=(i,pri)=>`<div class="kcard"><div class="t">${i.t}</div><div class="why">${i.why}</div>${widget(i)}<button class="btn ${pri?'pri':''}">${i.door}</button></div>`;
+document.getElementById('C').innerHTML=`
+<div class="cap"><h2>C · Board by who acts</h2><p><b>Best when</b> the merchant wants to see the whole job at once, like the project-board reference you sent. Each column is an owner; each card carries its own measured fact. <b>Cost:</b> medium; needs good narrow-width behaviour.</p></div>
+${head('Four owners, one glance')}
+<div class="board">
+ <div class="col"><div class="col-h"><span class="dot" style="background:var(--leak)"></span><h3>You decide</h3>${pill('gray','2')}</div>${by('you').map((i,x)=>kcard(i,x===0)).join('')}</div>
+ <div class="col"><div class="col-h"><span class="dot" style="background:var(--ok)"></span><h3>DynoWeb applies</h3>${pill('gray','5')}<span class="sp"></span><button class="btn sm pri">Apply 5</button></div>${by('dyno').map(i=>`<div class="kcard"><div class="t">${i.t}</div>${widget(i)}<div class="why" style="margin:0">${i.why}</div></div>`).join('')}</div>
+ <div class="col"><div class="col-h"><span class="dot" style="background:var(--warn)"></span><h3>Developer</h3>${pill('gray','3')}<span class="sp"></span><button class="btn sm">Copy briefs</button></div>${by('dev').map(i=>`<div class="kcard"><div class="t">${i.t}</div>${widget(i)}<div class="why" style="margin:0">${i.why}</div></div>`).join('')}</div>
+ <div class="col" style="background:#efe9f8"><div class="col-h"><span class="dot" style="background:var(--idea)"></span><h3>Later · ideas</h3>${pill('gray','2')}</div>${by('later').map(i=>`<div class="kcard"><div class="t">${i.t}</div>${widget(i)}<button class="btn">${i.door}</button></div>`).join('')}</div>
+</div>`;
+
+/* ---------- D: next + queue ---------- */
+document.getElementById('D').innerHTML=`
+<div class="cap"><h2>D · Do this next, then a short queue</h2><p><b>Best when</b> the goal is one decision per visit (the Sidekick Pulse idea): one big card, five more behind it. <b>Cost:</b> medium; the before/after preview needs a screenshot or a drawn mock.</p></div>
+${head('One thing to do now')}
+<div class="focus">
+ <div class="card hero">
+  <div style="display:flex;justify-content:space-between;align-items:center">${pill('leak','Do this next')}<span class="muted small">1 of 12</span></div>
+  <div style="display:flex;gap:22px;margin-top:6px;flex-wrap:wrap">
+   <div style="flex:1 1 280px">
+    <h2>${by('you')[0].t}</h2><div class="muted" style="margin-bottom:14px">${by('you')[0].why}</div>
+    ${widget(by('you')[0])}
+    <div class="where" style="margin:12px 0 16px">${by('you')[0].where}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri">Fix with a popup</button><button class="btn">Watch sessions</button><button class="btn ghost">Snooze</button></div>
+    <div class="muted small" style="margin-top:12px">After it’s live we measure actions on this button, before vs after, and show it on Impact.</div>
+   </div>
+   <div class="phone"><div class="ph-img"></div><div class="ph-line"></div><div class="ph-line" style="width:60%"></div><div class="ph-btn">Add to cart</div></div>
+  </div>
+ </div>
+ <div class="card"><div class="sec-h"><h3>Up next</h3>${pill('gray','5 of 11')}</div>
+  ${[by('you')[1],...by('dyno').slice(0,2),by('dev')[0],by('later')[0]].map(i=>`<div class="q"><div><div class="t" style="font-weight:600;font-size:13px">${i.t}</div><div class="small muted">${tagPill(i)} &nbsp;${i.why}</div></div><button class="btn sm">${i.door==='Fix it'?'Fix it':i.door==='Send to a developer'?'Send':'Open'}</button></div>`).join('')}
+  <div style="padding:12px 16px;border-top:1px solid var(--line2)"><button class="btn ghost" style="padding-left:0">Show all 12 ⌄</button></div>
+ </div>
+</div>
+<div class="card status" style="margin-top:16px"><div class="grow"><h3>Fixed this month</h3><div class="muted small">Entry per fix, with Undo. No dollar total — only what we measured, on Impact.</div></div><button class="btn sm">View on Impact</button></div>`;
+
+/* tabs */
+const tabs=[...document.querySelectorAll('.tab')];
+function show(t){tabs.forEach(b=>b.setAttribute('aria-selected',b.dataset.t===t));document.querySelectorAll('main > section').forEach(s=>s.hidden=s.id!==t);history.replaceState(null,'','#'+t);window.scrollTo(0,0)}
+tabs.forEach(b=>b.onclick=()=>show(b.dataset.t));
+show((location.hash||'#types').slice(1));
+</script>
+</body>
+</html>
